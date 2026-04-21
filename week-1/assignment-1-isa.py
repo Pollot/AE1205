@@ -8,15 +8,36 @@ R = 287
 t_0 = 288.15
 p_0 = 101325
 
+print("ISA Calculator")
+print("1. Calculate ISA for altitude in meters")
+print("2. Calculate ISA for altitude in feet")
+print("3. Calculate ISA for altitude in FL")
+
 while True:
     try:
-        h = float(input("Enter altitude [m]: "))
-        if h < 0 or h > 86000:
-            print("Incorrrect altitude! It needs to be a value between 0 and 86 000 m")
+        option = int(input("Choose the option: "))
+        if option < 1 or option > 3:
+            print("Choose one of the available options!")
         else:
             break
     except ValueError:
-        print("The altitude needs to be a number!")
+        print("Choose one of the available options!")
+
+while True:
+    try:
+        if option == 1:
+            h = float(input("Enter altitude [m]: "))
+        elif option == 2:
+            h = float(input("Enter altitude [ft]: ")) * 0.3048
+        else:
+            h = float(input("Enter altitude in flight levels: FL")) * 100 * 0.3048
+
+        if h < 0 or h > 86000:
+            print("Incorrrect altitude! It needs to be a value between 0 and 86 000 m (0 and 282 000 ft)")
+        else:
+            break
+    except ValueError:
+        print("The altitude/flight level needs to be a number!")
 
 def output(t, p, rho):
     print(f"Temperature: {round(t, 2)} [K] ({round(t-273.15, 2)} [C])")
