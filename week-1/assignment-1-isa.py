@@ -5,10 +5,8 @@ G_0 = 9.80665
 R = 287
 
 # Initial variables
-h_0 = 0
 t_0 = 288.15
 p_0 = 101325
-a = -0.0065
 
 while True:
     try:
@@ -37,77 +35,27 @@ def isothermal(t_0, h, h_0, p_0):
     rho = p/(R*t)
     return t, p, rho
 
+# layers boundaries calculations
+t_11, p_11, rho_11 = gradient(-0.0065, t_0, 11000, 0, p_0)
+t_20, p_20, rho_20 = isothermal(t_11, 20000, 11000, p_11)
+t_32, p_32, rho_32 = gradient(0.001, t_20, 32000, 20000, p_20)
+t_47, p_47, rho_47 = gradient(0.0028, t_32, 47000, 32000, p_32)
+t_51, p_51, rho_51 = isothermal(t_47, 51000, 47000, p_47)
+t_71, p_71, rho_71 = gradient(-0.0028, t_51, 71000, 51000, p_51)
+
 if h <= 11000:
-    output(*gradient(a, t_0, h, h_0, p_0))
-
+    result = gradient(-0.0065, t_0, h, 0, p_0)
 elif h <= 20000:
-    (t_0, p_0, rho) = gradient(a, t_0, 11000, h_0, p_0)
-    h_0 = 11000
-    output(*isothermal(t_0, h, h_0, p_0))
-
+    result = isothermal(t_11, h, 11000, p_11)
 elif h <= 32000:
-    (t_0, p_0, rho) = gradient(a, t_0, 11000, h_0, p_0)
-    h_0 = 11000
-    (t_0, p_0, rho) = isothermal(t_0, 20000, h_0, p_0)
-    h_0 = 20000
-    a = 0.001
-    output(*gradient(a, t_0, h, h_0, p_0))
-
+    result = gradient(0.001, t_20, h, 20000, p_20)
 elif h <= 47000:
-    (t_0, p_0, rho) = gradient(a, t_0, 11000, h_0, p_0)
-    h_0 = 11000
-    (t_0, p_0, rho) = isothermal(t_0, 20000, h_0, p_0)
-    h_0 = 20000
-    a = 0.001
-    (t_0, p_0, rho) = gradient(a, t_0, 32000, h_0, p_0)
-    h_0 = 32000
-    a = 0.0028
-    output(*gradient(a, t_0, h, h_0, p_0))
-
+    result = gradient(0.0028, t_32, h, 32000, p_32)
 elif h <= 51000:
-    (t_0, p_0, rho) = gradient(a, t_0, 11000, h_0, p_0)
-    h_0 = 11000
-    (t_0, p_0, rho) = isothermal(t_0, 20000, h_0, p_0)
-    h_0 = 20000
-    a = 0.001
-    (t_0, p_0, rho) = gradient(a, t_0, 32000, h_0, p_0)
-    h_0 = 32000
-    a = 0.0028
-    (t_0, p_0, rho) = gradient(a, t_0, 47000, h_0, p_0)
-    h_0 = 47000
-    output(*isothermal(t_0, h, h_0, p_0))
-
+    result = isothermal(t_47, h, 47000, p_47)
 elif h <= 71000:
-    (t_0, p_0, rho) = gradient(a, t_0, 11000, h_0, p_0)
-    h_0 = 11000
-    (t_0, p_0, rho) = isothermal(t_0, 20000, h_0, p_0)
-    h_0 = 20000
-    a = 0.001
-    (t_0, p_0, rho) = gradient(a, t_0, 32000, h_0, p_0)
-    h_0 = 32000
-    a = 0.0028
-    (t_0, p_0, rho) = gradient(a, t_0, 47000, h_0, p_0)
-    h_0 = 47000
-    (t_0, p_0, rho) = isothermal(t_0, 51000, h_0, p_0)
-    h_0 = 51000
-    a = -0.0028
-    output(*gradient(a, t_0, h, h_0, p_0))
+    result = gradient(-0.0028, t_51, h, 51000, p_51)
+else:
+    result = gradient(-0.002, t_71, h, 71000, p_71)
 
-elif h <= 86000:
-    (t_0, p_0, rho) = gradient(a, t_0, 11000, h_0, p_0)
-    h_0 = 11000
-    (t_0, p_0, rho) = isothermal(t_0, 20000, h_0, p_0)
-    h_0 = 20000
-    a = 0.001
-    (t_0, p_0, rho) = gradient(a, t_0, 32000, h_0, p_0)
-    h_0 = 32000
-    a = 0.0028
-    (t_0, p_0, rho) = gradient(a, t_0, 47000, h_0, p_0)
-    h_0 = 47000
-    (t_0, p_0, rho) = isothermal(t_0, 51000, h_0, p_0)
-    h_0 = 51000
-    a = -0.0028
-    (t_0, p_0, rho) = gradient(a, t_0, 71000, h_0, p_0)
-    h_0 = 71000
-    a = -0.002
-    output(*gradient(a, t_0, h, h_0, p_0))
+output(*result)
