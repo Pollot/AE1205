@@ -31,4 +31,41 @@ with open(database, "r") as f:
 
         table.append(clean_split)
 
-print(table)
+def input_handler():
+    usr_input = input().lower()
+    if usr_input == "y" or usr_input == "yes":
+        return True
+    elif usr_input == "n" or usr_input == "no":
+        return False
+    else:
+        print("Answer yes or no!")
+
+def learning():
+    if input_handler():
+        print("I win!")
+    else:
+        print("what a pitty!")
+
+idx = 0
+while True:
+    current_row = table[idx]
+
+    print(current_row[0] + " (Yes/No) ", end="")
+        
+    if input_handler():
+        if current_row[1].isdigit():
+            idx = int(current_row[1])
+        else:
+            print("I think I know it!")
+            print(f"Is it a {current_row[1]}?" + " (Yes/No) ", end="")
+            learning()
+            break
+
+    else:
+        if current_row[2].isdigit():
+            idx = int(current_row[2])
+        else:
+            print("I think I know it!")
+            print(f"Is it a {current_row[2]}?" + " (Yes/No) ", end="")
+            learning()
+            break
