@@ -22,7 +22,12 @@ with open(database, "r") as f:
         for item in raw_split:
             clean_split.append(item.strip())
 
-        clean_split[0] += "?"  # Add the missing question mark to the question
+        # Capitalize the question (in case it's not capitalized) and add the question mark
+        clean_split[0] = clean_split[0].capitalize()
+        clean_split[0] += "?"
+        # Lowercase the second and third entries
+        clean_split[1] = clean_split[1].lower()
+        clean_split[2] = clean_split[2].lower()
 
         table.append(clean_split)
 
