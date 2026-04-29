@@ -24,7 +24,8 @@ with open(database, "r") as f:
 
         # Capitalize the question (in case it's not capitalized) and add the question mark
         clean_split[0] = clean_split[0].capitalize()
-        clean_split[0] += "?"
+        if not clean_split[0].endswith("?"):
+            clean_split[0] += "?"
         # Lowercase the second and third entries
         clean_split[1] = clean_split[1].lower()
         clean_split[2] = clean_split[2].lower()
@@ -41,11 +42,41 @@ def input_handler():
         else:
             print("Answer yes or no: ", end="")
 
-def learning():
+def learning(row, column):
     if input_handler():
         print("I win!")
     else:
         print("what a pitty!")
+
+        guessed_animal = table[row][column]
+        
+        new_row = []
+        print("What was the correct animal? ", end="")
+        correct_animal = input().lower()
+        
+        print(f"Give yes/no question to distinguish {correct_animal} from {guessed_animal}: ", end="")
+        new_row.append(input().capitalize())
+
+        print(f"What is the answer for {correct_animal}? ", end="")
+        if input_handler():
+            new_row.append(correct_animal)
+            new_row.append(guessed_animal)
+        else:
+            new_row.append(guessed_animal)
+            new_row.append(correct_animal)
+
+        write_database(row, column, new_row)
+
+def write_database(row, column, new_row):
+    table.append(new_row)
+    table[row][column] = table.index(new_row)
+
+    with open(database, "w") as f:
+        index = 0
+        for element in table:
+            line = f"{index} -- {element[0]} -- {element[1]} -- {element[2]}\n"
+            f.write(line)
+            index += 1
 
 idx = 0
 while True:
@@ -59,7 +90,7 @@ while True:
         else:
             print("I think I know it!")
             print(f"Is it a {current_row[1]}?" + " (Yes/No) ", end="")
-            learning()
+            learning(idx, 1)
             break
 
     else:
@@ -68,5 +99,5 @@ while True:
         else:
             print("I think I know it!")
             print(f"Is it a {current_row[2]}?" + " (Yes/No) ", end="")
-            learning()
+            learning(idx, 2)
             break
