@@ -32,13 +32,14 @@ with open(database, "r") as f:
         table.append(clean_split)
 
 def input_handler():
-    usr_input = input().lower()
-    if usr_input == "y" or usr_input == "yes":
-        return True
-    elif usr_input == "n" or usr_input == "no":
-        return False
-    else:
-        print("Answer yes or no!")
+    while True:
+        usr_input = input().lower()
+        if usr_input == "y" or usr_input == "yes":
+            return True
+        elif usr_input == "n" or usr_input == "no":
+            return False
+        else:
+            print("Answer yes or no: ", end="")
 
 def learning():
     if input_handler():
