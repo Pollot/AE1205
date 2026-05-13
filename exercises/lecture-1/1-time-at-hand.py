@@ -1,7 +1,7 @@
 while True:
     raw_time_input = input("Enter the time in hh:mm format: ")
     if ":" not in raw_time_input:
-        print("Include \":\" as the separator between hours and minutes!")
+        print("Separate hours and minutes using a colon \":\"!")
         continue
 
     try:
@@ -12,10 +12,10 @@ while True:
         continue
     
     if not 0 <= hour_value < 24:
-        print("Enter an hour from 0 to 23!")
+        print("Enter the hour as a number between 0 and 23!")
         continue
     elif not 0 <= minute_value < 60:
-        print("Enter minutes from 0 to 59!")
+        print("Enter the minutes as a number between 0 and 59!")
         continue
     else:
         break
