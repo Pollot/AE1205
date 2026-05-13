@@ -192,6 +192,9 @@ while not winner:
     if cur_player < num_players-1:
         cur_player += 1
     else:
+        print("\nTotal scores after the round:")
+        for i, player in enumerate(players):
+            print(f"{player}: {scores[i]}")
         cur_player = 0
 
 print(f"\nThe winner is: {winner}! Gambling rocks!")
