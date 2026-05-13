@@ -88,6 +88,28 @@ def dice_roll(num_dice: int) -> list:
 
     return result
 
+def is_valid_selection(throw: list[int]) -> bool:
+    if sorted(throw) == [1, 2, 3, 4, 5, 6]:
+        return True
+
+    count = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0
+    }
+
+    for face in throw:
+        count[face] += 1
+
+    for face in [2, 3, 4, 6]:
+        if count[face] == 1 or count[face] == 2:
+            return False  # Only score points in groups of more than 2
+
+    return True
+
 while not winner:
     round_score = 0
     num_dice = 6
@@ -100,6 +122,7 @@ while not winner:
 
         if calc_score(roll) == 0:
             print("Farkle!")
+            input("Press enter to continue ")
             break
         else:
             while True:
@@ -130,6 +153,10 @@ while not winner:
                 
                 if calc_score(throw) == 0:
                     print("You must select dice that score points!")
+                    continue
+                
+                if not is_valid_selection(throw):
+                    print("All selected dice must be scoring!")
                     continue
 
                 break
