@@ -116,22 +116,26 @@ while not winner:
                 
                 out_of_index = False
                 for element in clean_selected_dice:
-                    if not 1 <= element <= 6:
+                    if not 1 <= element <= len(roll):
                         out_of_index = True
                 if out_of_index:
                     print("Choose dice from the available rolls!")
                     continue
                 
+                if len(clean_selected_dice) != len(set(clean_selected_dice)):
+                    print("You cannot select the same die twice!")
+                    continue
+
+                throw = []
+                for die in clean_selected_dice:
+                    throw.append(roll[die-1])
+                
+                if calc_score(throw) == 0:
+                    print("You must select dice that score points!")
+                    continue
+
                 break
 
-            throw = []
-            for die in clean_selected_dice:
-                throw.append(roll[die-1])
-            
-            #print(raw_selected_dice)
-            #print(clean_selected_dice)
-            #print(throw)
-            
             round_score += calc_score(throw)
             num_dice -= len(throw)
 
@@ -140,8 +144,8 @@ while not winner:
 
             if num_dice == 0:
                 print("Hot dice!")
+                print("You get all dice back!")
                 num_dice = 6
-                continue
 
             while True:
                 player_choice = input("Do you want to bank your score and end the round? (Yes/No) ").lower()
