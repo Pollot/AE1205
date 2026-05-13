@@ -1,6 +1,6 @@
+from random import randint
+
 WINNING_SCORE = 2000  # winning score
-cur_player = 0  # index of the current player
-winner = ''  # name of the winner
 
 print("Let's play farkle!")
 
@@ -78,3 +78,91 @@ def calc_score(throw: list[int]) -> int:
     return score
 
 # print(calc_score([1, 2, 3, 4, 5, 6]))  # Testing
+
+cur_player = 0  # index of the current player
+winner = ""  # name of the winner
+
+def dice_roll(num_dice: int) -> list:
+    result = []
+
+    for _ in range(1, num_dice+1):
+        result.append(randint(1, 6))
+
+    return result
+
+while not winner:
+    round_score = 0
+    num_dice = 6
+    print(f"It's your turn {players[cur_player]}!")
+    while True:
+        roll = dice_roll(num_dice)
+        print("Your rolls:")
+        for i in range(len(roll)):
+            print(f"{i+1}: {roll[i]}")
+
+        if calc_score(roll) == 0:
+            print("Farkle!")
+            break
+        else:
+            while True:
+                raw_selected_dice = input("Which dice do you want to keep (separate them with commas)? ").split(",")
+                clean_selected_dice = []
+                try:
+                    for element in raw_selected_dice:
+                        clean_selected_dice.append(int(element))
+                except ValueError:
+                    print("Input integer numbers separated with commas!")
+                    continue
+                
+                out_of_index = False
+                for element in clean_selected_dice:
+                    if not 1 <= element <= 6:
+                        out_of_index = True
+                if out_of_index:
+                    print("Choose dice from the available rolls!")
+                    continue
+                
+                break
+
+            throw = []
+            for die in clean_selected_dice:
+                throw.append(roll[die-1])
+            
+            #print(raw_selected_dice)
+            #print(clean_selected_dice)
+            #print(throw)
+            
+            round_score += calc_score(throw)
+            num_dice -= len(throw)
+
+            print(f"Current score: {round_score}")
+            print(f"Remaining dice: {num_dice}")
+
+            if num_dice == 0:
+                print("Hot dice!")
+                num_dice = 6
+                continue
+
+            while True:
+                player_choice = input("Do you want to bank your score and end the round? (Yes/No) ").lower()
+                if  player_choice == "n" or player_choice == "no":
+                    end_round = False
+                    break
+                elif player_choice == "y" or player_choice == "yes":
+                    end_round = True
+                    break
+                else:
+                    print("Answer yes/no (y/n)!")
+
+            if end_round:
+                scores[cur_player] += round_score
+                if scores[cur_player] >= WINNING_SCORE:
+                    winner = players[cur_player]
+                break
+
+    if cur_player < num_players-1:
+        cur_player += 1
+    else:
+        cur_player = 0
+
+print(f"The winner is: {winner}! Gambling rocks!")
