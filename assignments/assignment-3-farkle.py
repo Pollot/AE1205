@@ -77,9 +77,6 @@ def calc_score(throw: list[int]) -> int:
 
     return score
 
-cur_player = 0  # index of the current player
-winner = ""  # name of the winner
-
 def dice_roll(num_dice: int) -> list:
     result = []
 
@@ -109,6 +106,9 @@ def is_valid_selection(throw: list[int]) -> bool:
             return False  # Only score points in groups of more than 2
 
     return True
+
+cur_player = 0  # Index of the current player
+winner = ""  # Name of the winner
 
 while not winner:
     round_score = 0
@@ -140,29 +140,29 @@ while not winner:
                     if not 1 <= element <= len(roll):
                         out_of_index = True
                 if out_of_index:
-                    print("Choose dice from the available roll!")
+                    print("Choose dice from the available rolls!")
                     continue
                 
                 if len(clean_selected_dice) != len(set(clean_selected_dice)):
                     print("You cannot select the same die twice!")
                     continue
 
-                throw = []
+                kept_dice = []
                 for die in clean_selected_dice:
-                    throw.append(roll[die-1])
+                    kept_dice.append(roll[die-1])  # -1, because selected indexes are +1
                 
-                if calc_score(throw) == 0:
+                if calc_score(kept_dice) == 0:
                     print("You must select dice that score points!")
                     continue
                 
-                if not is_valid_selection(throw):
+                if not is_valid_selection(kept_dice):
                     print("All selected dice must be scoring!")
                     continue
 
                 break
 
-            round_score += calc_score(throw)
-            num_dice -= len(throw)
+            round_score += calc_score(kept_dice)
+            num_dice -= len(kept_dice)
 
             print(f"\nCurrent score: {round_score}")
             print(f"Remaining dice: {num_dice}")
