@@ -1,4 +1,5 @@
 days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 def get_date(question):
     while True:
@@ -24,7 +25,7 @@ def get_date(question):
         except (ValueError, IndexError):
             print("Enter a valid date!")
 
-# Returns absolute number of days passed since year 1
+# Returns absolute number of days since year 1, 01.01.0001 = day 1
 def abs_num_days(date: list) -> int:
     days = date[0]
     days_month = sum(days_per_month[0:(date[1] - 1)])  # -1 to exclude the current month
@@ -39,7 +40,7 @@ def count_leap_years(date: list) -> int:
     for year in range(1, cur_year):  # Start from 1 to avoid counting "year 0"
         if check_leap_year(year):
             count += 1
-    # Add the additional leap day if the current year is a leap year and month passed february
+    # Add an additional leap day if the current year is a leap year and the month has passed February
     if check_leap_year(cur_year) and date[1] > 2:
         count += 1
     return count
@@ -50,9 +51,21 @@ def check_leap_year(year: int) -> bool:
     else:
         return False
 
+# 01.01.0001 is used as a reference
+# It was a Monday in the proleptic Gregorian calendar and matches the list of weekdays
+# The proleptic Gregorian calendar extends the Gregorian calendar (introduced in 1582) backwards
+def get_weekday(date: list) -> str:
+    return weekdays[(abs_num_days(date) - 1) % 7]  # -1, because the index 0 of the list corresponds to day 1 of the calendar
+
 date_1 = get_date("Enter the first date (dd.mm.yyyy): ")
 date_2 = get_date("Enter the second date (dd.mm.yyyy): ")
 
 abs_diff = abs(abs_num_days(date_1) - abs_num_days(date_2))
 
 print(f"The number of days between the dates is: {abs_diff}")
+
+weekday_1 = get_weekday(date_1)
+weekday_2 = get_weekday(date_2)
+
+print(f"The weekday of {date_1[0]:02d}.{date_1[1]:02d}.{date_1[2]:04d} is: {weekday_1}")
+print(f"The weekday of {date_2[0]:02d}.{date_2[1]:02d}.{date_2[2]:04d} is: {weekday_2}")
