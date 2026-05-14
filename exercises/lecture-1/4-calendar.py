@@ -1,0 +1,58 @@
+days_per_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+def get_date(question):
+    while True:
+        try:
+            date = input(question)
+            date = date.split(".")
+            day = int(date[0])
+            month = int(date[1])
+            year = int(date[2])
+
+            max_days = days_per_month[month - 1]  # -1, because the index starts at 0
+            if month == 2 and check_leap_year(year):
+                max_days = 29
+            
+            if year < 1:
+                print("Invalid year!")
+            elif month < 1 or month > 12:
+                print("Invalid month!")
+            elif day < 1 or day > max_days:
+                print("Invalid day!")
+            else:
+                return [day, month, year]
+        except (ValueError, IndexError):
+            print("Enter a valid date!")
+
+# Returns absolute number of days passed since year 1
+def abs_num_days(date: list) -> int:
+    days = date[0]
+    days_month = sum(days_per_month[0:(date[1] - 1)])  # -1 to exclude the current month
+    days_year = (date[2] - 1) * 365  # -1 to exclude the current year
+    days_leap = count_leap_years(date)
+    return days + days_month + days_year + days_leap
+
+# Counts passed leap years
+def count_leap_years(date: list) -> int:
+    cur_year = date[2]
+    count = 0
+    for year in range(1, cur_year):  # Start from 1 to avoid counting "year 0"
+        if check_leap_year(year):
+            count += 1
+    # Add the additional leap day if the current year is a leap year and month passed february
+    if check_leap_year(cur_year) and date[1] > 2:
+        count += 1
+    return count
+
+def check_leap_year(year: int) -> bool:
+    if (year % 4 == 0 and year % 100 != 0) or year % 400 == 0:
+        return True
+    else:
+        return False
+
+date_1 = get_date("Enter the first date (dd.mm.yyyy): ")
+date_2 = get_date("Enter the second date (dd.mm.yyyy): ")
+
+abs_diff = abs(abs_num_days(date_1) - abs_num_days(date_2))
+
+print(f"The number of days between the dates is: {abs_diff}")
