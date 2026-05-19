@@ -1,4 +1,4 @@
-from math import pi, sin, cos, radians
+from math import pi, sin, cos, radians, atan2, degrees
 import matplotlib.pyplot as plt
 
 # Castle location
@@ -33,14 +33,21 @@ def cow_catapult(R, angle_start, angle_end, L_0, k_elas, m_cow):
     time_list = []
     x_list = []
     h_list = []
+    speed_list = []
+    flight_angle_list = []
 
     # Euler integration of the first part: the launch
     while cur_angle < angle_end:    
         x = -cos(radians(cur_angle)) * R
         y = sin(radians(cur_angle)) * R
+        current_speed = angle_spd * R
+        current_flight_angle = 90 - cur_angle
+
         time_list.append(t)
         x_list.append(x)
         h_list.append(y)
+        speed_list.append(current_speed)
+        flight_angle_list.append(current_flight_angle)
 
         # Current lenght of the elastic band based on the cosine rule
         L_elas = (R**2 + R**2 - 2 * R * R * cos(radians(90 - cur_angle)))**(1/2)
@@ -70,7 +77,7 @@ def cow_catapult(R, angle_start, angle_end, L_0, k_elas, m_cow):
 
     # Exit velocity from the launch/initial projectile motion velocity
     v_exit = angle_spd * R
-    print(f"Exit velocity: {v_exit}")
+    print(f"Exit velocity: {v_exit:.3f}")
 
     v_x = v_exit * cos(radians(90 - angle_end))
     v_y = v_exit * sin(radians(90 - angle_end))
@@ -89,33 +96,65 @@ def cow_catapult(R, angle_start, angle_end, L_0, k_elas, m_cow):
 
         v_x += a_x * delta_t
         v_y += a_y * delta_t
+        current_speed = (v_x**2 + v_y**2)**(1/2)
+        current_flight_angle = degrees(atan2(v_y, v_x))
 
         x += v_x * delta_t
         y += v_y * delta_t
         time_list.append(t)
         x_list.append(x)
         h_list.append(y)
-        
+        speed_list.append(current_speed)
+        flight_angle_list.append(current_flight_angle)
+
         t += delta_t
 
-    return time_list, x_list, h_list
+    return time_list, x_list, h_list, speed_list, flight_angle_list
 
 # Catapult input parameters
 R = 10          # [m]
 angle_start = 0 # [deg]
 angle_end = 60  # [deg]
 L_0 = 0.5       # [m]
-k_elas = 9000   # [N/m]
+k_elas = 12000   # [N/m]
 m_cow = 550     # [kg]
 
-time_list, x_list, h_list = cow_catapult(R, angle_start, angle_end, L_0, k_elas, m_cow)
+time_list, x_list, h_list, speed_list, flight_angle_list = cow_catapult(R, angle_start, angle_end, L_0, k_elas, m_cow)
 
-print(f"Distance achieved: {x_list[-1]}")
+print(f"Distance achieved: {x_list[-1]:.3f}")
 
+'''
 # Plot the trajectory (h vs x)
 plt.plot(x_list, h_list)
 plt.xlabel("Distance (m)")
 plt.ylabel("Height (m)")
 plt.title("Cow Trajectory")
 plt.grid(True)
+plt.show()
+'''
+
+plt.figure(figsize=(10, 5))
+plt.plot(x_list, h_list, color='blue', linewidth=2, label='Cow Path')
+
+plt.title(f"Cow Trajectory (Final Distance: {x_list[-1]:.3f} m)")
+plt.xlabel("Distance [m]")
+plt.ylabel("Height [m]")
+plt.grid(True)
+
+# Second window
+fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(8, 8))
+fig.suptitle("Cow speed and flight angle", fontsize=14)
+
+# Plot 1
+ax1.plot(time_list, speed_list, color='purple')
+ax1.set_ylabel("Speed [m/s]")
+ax1.grid(True)
+
+# Plot 2
+ax2.plot(time_list, flight_angle_list, color='orange')
+ax2.set_ylabel("Flight Angle [deg]")
+ax2.set_xlabel("Time [s]")
+ax2.grid(True)
+
+plt.tight_layout()
 plt.show()
