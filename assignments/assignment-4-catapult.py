@@ -52,7 +52,7 @@ def cow_catapult(R, phi_start, phi_stop, L_0, k_elas, m_cow):
         spd_list.append(linear_spd)
         fpa_list.append(fpa)
 
-        # Current length of the elastic band using cosine rule
+        # Current length of the elastic band using the cosine rule
         L_elas = (R**2 + R**2 - 2 * R * R * cos(radians(90 - phi)))**(1/2) # [m]
 
         # Elastic force using Hooke's law
@@ -61,7 +61,7 @@ def cow_catapult(R, phi_start, phi_stop, L_0, k_elas, m_cow):
         # The angle between the elastic cord and the swinging arm
         gamma = 45 + phi/2 # [deg]
 
-        # Decomposition of the elastic force into tangent and radial components (n-t coordinates)
+        # Decomposition of the elastic force into tangential and radial components (n-t coordinates)
         F_tan = F_elas * sin(radians(gamma)) # [N]
         F_rad = F_elas * cos(radians(gamma)) # [N]
 
@@ -79,6 +79,9 @@ def cow_catapult(R, phi_start, phi_stop, L_0, k_elas, m_cow):
 
         t += delta_t
 
+    # Save the index of the launch parameters for later plotting
+    launch_idx = len(t_list) - 1
+
     # Launch velocity from the catapult/initial velocity of the projectile motion
     v_launch = phi_spd * R # [m/s]
     print(f"Launch velocity: {v_launch:.3f}")
@@ -94,7 +97,7 @@ def cow_catapult(R, phi_start, phi_stop, L_0, k_elas, m_cow):
         a_drag = F_drag / m_cow                       # [m/s^2]
 
         # Decompose the drag acceleration into x-y components
-        # Uses direction specified by the velocity unit vector: v/v_total = <v_x/v_total, v_y/v_total>
+        # Uses the direction specified by the velocity unit vector: v/v_total = <v_x/v_total, v_y/v_total>
         # The drag unit vector is the same, just with the opposite direction, hence the minus sign
         a_drag_x = - a_drag * (v_x / v_total)
         a_drag_y = - a_drag * (v_y / v_total)
@@ -109,7 +112,7 @@ def cow_catapult(R, phi_start, phi_stop, L_0, k_elas, m_cow):
         x += v_x * delta_t
         y += v_y * delta_t
 
-        fpa = degrees(atan2(v_y, v_x)) # The velocity vector is v_x + v_y, so to get the FPA (angle between the velocity vector and the horizon), use arctan(v_y / v_x), atan2 takes y and x components and handles the sign and div by 0
+        fpa = degrees(atan2(v_y, v_x)) # The velocity vector is v_x + v_y, so to get the FPA (angle between the velocity vector and the horizon), use arctan(v_y / v_x). The atan2 function takes the y and x components and automatically handles the sign and division by zero
 
         t_list.append(t)
         x_list.append(x)
@@ -119,7 +122,7 @@ def cow_catapult(R, phi_start, phi_stop, L_0, k_elas, m_cow):
 
         t += delta_t
 
-    return t_list, x_list, h_list, spd_list, fpa_list
+    return t_list, x_list, h_list, spd_list, fpa_list, launch_idx
 
 # Catapult input parameters
 R = 10         # [m]
@@ -129,11 +132,23 @@ L_0 = 0.5      # [m]
 k_elas = 10160 # [N/m], 9000 was the initial value, 10160 results in a distance of 300 m
 m_cow = 550    # [kg]
 
-t_list, x_list, h_list, spd_list, fpa_list = cow_catapult(R, phi_start, phi_stop, L_0, k_elas, m_cow)
+t_list, x_list, h_list, spd_list, fpa_list, launch_idx = cow_catapult(R, phi_start, phi_stop, L_0, k_elas, m_cow)
 
+# Get the launch parameters
+t_launch = t_list[launch_idx]
+x_launch = x_list[launch_idx]
+h_launch = h_list[launch_idx]
+spd_launch = spd_list[launch_idx]
+fpa_launch = fpa_list[launch_idx]
+
+# ===========
 # Main window
+# ===========
 plt.figure(figsize=(10, 5))
-plt.plot(x_list, h_list, color="blue", linewidth=2, label="Cow Trajectory")
+plt.plot(x_list, h_list, color="dodgerblue", linewidth=2, label="Cow Trajectory")
+
+# Add the launch point marker
+plt.plot(x_launch, h_launch, marker="o", color="red", linestyle="None", label=f"Launch Point (x: {x_launch:.2f} m, h: {h_launch:.2f} m)")
 
 # Trajectory plot
 plt.title(f"Cow Trajectory (Final Distance: {x_list[-1]:.2f} m)")
@@ -142,25 +157,31 @@ plt.ylabel("Height [m]")
 plt.grid(True)
 
 # Additional ground and target constant lines
-plt.axhline(y=-h_0, color="red", linestyle="-", label=f"Ground ({-h_0} m)")
+plt.axhline(y=-h_0, color="saddlebrown", label=f"Ground ({-h_0} m)")
 plt.axvline(x=delta_x, color="green", linestyle="--", label=f"Target Distance ({delta_x} m)")
 
-plt.legend()
+plt.legend(loc="lower left", shadow=True)
 
+# =============
 # Second window
+# =============
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(8, 8))
-fig.suptitle("Cow Telemetry: Speed and Flight Path Angle", fontsize=14)
+fig.suptitle("Cow Telemetry: Speed and Flight Path Angle")
 
 # Speed plot
-ax1.plot(t_list, spd_list, color="green")
+ax1.plot(t_list, spd_list, color="teal", label="Speed Profile")
+ax1.plot(t_launch, spd_launch, marker="o", color="red", linestyle="None", label=f"Launch Point (time: {t_launch:.2f} s, speed: {spd_launch:.2f} m/s)")
 ax1.set_ylabel("Speed [m/s]")
 ax1.grid(True)
+ax1.legend(loc="lower right", shadow=True)
 
 # FPA plot
-ax2.plot(t_list, fpa_list, color="orange")
+ax2.plot(t_list, fpa_list, color="indigo", label="Flight Path Angle")
+ax2.plot(t_launch, fpa_launch, marker="o", color="red", linestyle="None", label=f"Launch Point (time: {t_launch:.2f} s, FPA: {fpa_launch:.2f} deg)")
 ax2.set_ylabel("Flight Path Angle [deg]")
 ax2.set_xlabel("Time [s]")
 ax2.grid(True)
+ax2.legend(loc="lower left", shadow=True)
 
 plt.tight_layout()
 plt.show()
