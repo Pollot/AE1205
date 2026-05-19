@@ -17,9 +17,12 @@ m_cow = 550    # [kg]
 rho_cow = 1000 # [kg/m^3]
 volume_cow = m_cow / rho_cow           # [m^3]
 r_cow = (3/4 * volume_cow / pi)**(1/3) # [m]
+C_d = 0.7     # [-]
+S = pi * r_cow**2 # [m^2]
 
 # Physics parameters
-g_0 = 9.81 # [m/s^2]
+g_0 = 9.81    # [m/s^2]
+rho_0 = 1.225 # [kg/m^3]
 
 # Simulation parameters
 tick_rate = 10000     # [Hz = 1/s]
@@ -78,30 +81,28 @@ while cur_angle < angle_end:
     t += delta_t
 
 # Exit velocity from the launch/initial projectile motion velocity
-v_0 = angle_spd * R
-print(f"Exit velocity: {v_0}")
+v_exit = angle_spd * R
+print(f"Exit velocity: {v_exit}")
 
-'''
-# AI code to plot the launch phases
-fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(8, 10))
+v_x = v_exit * cos(radians(90 - angle_end))
+v_y = v_exit * sin(radians(90 - angle_end))
 
-# --- Graph 1: Angle ---
-ax1.plot(time_list, angle_list, color='red', label="Angle")
-ax1.set_ylabel("Angle (deg)")
-ax1.set_title("Catapult Angular Dynamics") # Title for the top of the overall stack
-ax1.grid(True)
+# Euler integration of the first part: the projectile motion
+while y > -h_0:
+    v_total = (v_x**2 + v_y**2)**(1/2) # [m/s]
+    F_drag = C_d * 1/2 * rho_0 * v_total**2 * S # [N]
+    a_drag = F_drag / m_cow # [m/s^2]
 
-# --- Graph 2: Angular Velocity ---
-ax2.plot(time_list, angle_spd_list, color='green', label="Velocity")
-ax2.set_ylabel("Angular Velocity (rad/s)")
-ax2.grid(True)
+    a_drag_x = a_drag * (v_x / v_total)
+    a_drag_y = a_drag * (v_y / v_total)
 
-# --- Graph 3: Angular Acceleration ---
-ax3.plot(time_list, angle_acc_list, color='blue', label="Acceleration")
-ax3.set_ylabel("Angular Accel (rad/s²)")
-ax3.set_xlabel("Time (s)")  # Only need to label the bottom X-axis because sharex=True
-ax3.grid(True)
+    a_x = -a_drag_x
+    a_y = -a_drag_y - g_0
 
-plt.tight_layout()
-plt.show()
-'''
+    v_x += a_x * delta_t
+    x += v_x * delta_t
+    v_y += a_y * delta_t
+    y += v_y * delta_t
+    pos.append([t, x, y])
+    
+    t += delta_t
