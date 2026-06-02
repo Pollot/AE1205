@@ -11,10 +11,12 @@ config.read(os.path.join(game_dir, "config.ini"))
 
 width  = config.getint("display", "width", fallback=600)
 height = config.getint("display", "height", fallback=400)
-r, g, b = config.get("display", "background_color", fallback="10, 10, 25").split(",")
+r, g, b = config.get("display", "background_color", fallback="0, 0, 0").split(",")
 background_color = (int(r.strip()), int(g.strip()), int(b.strip()))
 
-speed  = config.getfloat("gameplay", "speed", fallback=0.05)
+speed  = config.getfloat("gameplay", "speed", fallback=3)  # Cells per second
+
+fps = config.getint("simulation", "fps", fallback=60)
 
 # Initialise the PyGame environment
 pg.init()
@@ -71,7 +73,7 @@ def draw_maze(screen, maze):
     for y, row in enumerate(maze):
         for x, char in enumerate(row):
             if char == "*":
-                screen.blit(brick, screen_pos((x, y))) # Pass the top-left coordinates directly instead of using a rect
+                screen.blit(brick, screen_pos((x, y)))  # Pass the top-left coordinates directly instead of using a rect
             elif char == "d":
                 screen.blit(door, screen_pos((x, y)))
             elif char == "k":
@@ -98,7 +100,7 @@ gold_key  = pg.transform.scale(gold_key, (tile_size, tile_size))
 guard     = pg.transform.scale(guard, (tile_size, tile_size))
 player    = pg.transform.scale(player, (tile_size, tile_size))
 
-def move(old_position, direction, speed):
+def move(old_position, direction, speed, dt):
     if direction == (0, 0):
         return old_position
     x, y = old_position
@@ -107,15 +109,19 @@ def move(old_position, direction, speed):
 
     if direction_x == 0:
         x = round(x)
-        y += direction_y * speed
+        y += direction_y * speed * dt
 
     if direction_y == 0:
         y = round(y)
-        x += direction_x * speed
+        x += direction_x * speed * dt
 
     return x, y
 
+# Used for variable dt with an FPS cap
+# Because the player moves at a constant velocity, a higher dt resulting from slowdowns doesn't affect movement accuracy
+clock = pg.time.Clock()
 running = True
+dt = 0
 
 while running:
     for event in pg.event.get():
@@ -128,7 +134,7 @@ while running:
             if event.key == pg.K_ESCAPE:
                 running = False
 
-    keys = pg.key.get_pressed() # pg.event.get() already pumps the event queue
+    keys = pg.key.get_pressed()  # pg.event.get() already pumps the event queue
 
     if keys[pg.K_UP]:
         direction = (0, -1)
@@ -141,7 +147,7 @@ while running:
     else:
         direction = (0, 0)
 
-    pos_player = move(pos_player, direction, speed)
+    pos_player = move(pos_player, direction, speed, dt)
 
     # Drawing routine
     screen.fill(background_color)
@@ -149,6 +155,8 @@ while running:
     draw_maze(screen, maze)
     screen.blit(player, screen_pos(pos_player))
     pg.display.flip()
+
+    dt = clock.tick(fps) / 1000  # Limits FPS and returns the elapsed time since the last frame in seconds
 
 # Close the game window and properly clean up
 pg.quit()
