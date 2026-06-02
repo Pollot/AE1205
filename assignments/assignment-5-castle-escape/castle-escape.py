@@ -9,14 +9,15 @@ game_dir = os.path.dirname(os.path.abspath(__file__))
 config = configparser.ConfigParser()
 config.read(os.path.join(game_dir, "config.ini"))
 
-width  = config.getint("display", "width", fallback=600)
-height = config.getint("display", "height", fallback=400)
+width   = config.getint("display", "width", fallback=600)
+height  = config.getint("display", "height", fallback=400)
 r, g, b = config.get("display", "background_color", fallback="0, 0, 0").split(",")
 background_color = (int(r.strip()), int(g.strip()), int(b.strip()))
 
-speed  = config.getfloat("gameplay", "speed", fallback=3)  # Cells per second
+speed = config.getfloat("gameplay", "speed", fallback=3)  # Cells per second
 
 fps = config.getint("simulation", "fps", fallback=60)
+dt_max = config.getfloat("simulation", "dt_max", fallback=0.1)
 
 # Initialise the PyGame environment
 pg.init()
@@ -157,6 +158,7 @@ while running:
     pg.display.flip()
 
     dt = clock.tick(fps) / 1000  # Limits FPS and returns the elapsed time since the last frame in seconds
+    dt = min(dt, dt_max)  # Prevents large dt if there's a significant slowdown/freeze
 
 # Close the game window and properly clean up
 pg.quit()
