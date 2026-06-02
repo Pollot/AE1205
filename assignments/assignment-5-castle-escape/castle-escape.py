@@ -25,6 +25,26 @@ gold_key  = pg.image.load(os.path.join(game_dir, "gold_key.png"))
 guard     = pg.image.load(os.path.join(game_dir, "guard.png"))
 player    = pg.image.load(os.path.join(game_dir, "player.png"))
 
+def load_maze(filename):
+    maze = []
+    with open(os.path.join(game_dir, filename)) as f:
+        for line in f:
+            line = line[:-1] # Removes the \n
+            maze.append(list(line))
+    
+    pos_guards = []
+    pos_player = [0, 0]
+    for i, row in enumerate(maze):
+        for j, char in enumerate(row):
+            if char == "G":
+                pos_guards.append([i, j])
+                maze[i][j] = " "
+            elif char == "P":
+                pos_player = [i, j]
+                maze[i][j] = " "
+
+    return maze, pos_guards, pos_player
+
 running = True
 
 while running:
