@@ -29,21 +29,41 @@ def load_maze(filename):
     maze = []
     with open(os.path.join(game_dir, filename)) as f:
         for line in f:
-            line = line[:-1] # Removes the \n
+            line = line.rstrip("\n")
             maze.append(list(line))
     
     pos_guards = []
     pos_player = [0, 0]
-    for i, row in enumerate(maze):
-        for j, char in enumerate(row):
+    for y, row in enumerate(maze):
+        for x, char in enumerate(row):
             if char == "G":
-                pos_guards.append([i, j])
-                maze[i][j] = " "
+                pos_guards.append([x, y])
+                maze[y][x] = " "
             elif char == "P":
-                pos_player = [i, j]
-                maze[i][j] = " "
+                pos_player = [x, y]
+                maze[y][x] = " "
 
     return maze, pos_guards, pos_player
+
+def reveal_maze(maze, pos_player):
+    x, y = pos_player
+    for dy in range(-2, 3):
+        for dx in range(-2, 3):
+            idx_y = y + dy
+            idx_x = x + dx
+
+            if 0 <= idx_y < len(maze) and 0 <= idx_x < len(maze[idx_y]):
+                if maze[idx_y][idx_x] == "#":
+                    maze[idx_y][idx_x] = "*"
+                elif maze[idx_y][idx_x] == "D":
+                    maze[idx_y][idx_x] = "d"
+                elif maze[idx_y][idx_x] == "K":
+                    maze[idx_y][idx_x] = "k"
+
+    return maze
+
+maze, pos_guards, pos_player = load_maze("maze1.txt")
+maze = reveal_maze(maze, pos_player)
 
 running = True
 
