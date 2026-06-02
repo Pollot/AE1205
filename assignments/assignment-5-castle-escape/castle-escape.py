@@ -118,11 +118,26 @@ def move(old_position, direction, speed, dt):
 
     return x, y
 
+def check_wall(position, direction, can_open_door):
+    x, y = position
+    direction_x, direction_y = direction
+
+    boundary_x = round(x + direction_x * 0.5)
+    boundary_y = round(y + direction_y * 0.5)
+
+    if maze[boundary_y][boundary_x] == "*":
+        return True
+    elif maze[boundary_y][boundary_x] == "d" and not can_open_door:
+        return True
+    else:
+        return False
+
 # Used for variable dt with an FPS cap
 # Because the player moves at a constant velocity, a higher dt resulting from slowdowns doesn't affect movement accuracy
 clock = pg.time.Clock()
 running = True
 dt = 0
+has_key = False
 
 while running:
     for event in pg.event.get():
@@ -148,7 +163,8 @@ while running:
     else:
         direction = (0, 0)
 
-    pos_player = move(pos_player, direction, speed, dt)
+    if not check_wall(pos_player, direction, has_key):
+        pos_player = move(pos_player, direction, speed, dt)
 
     # Drawing routine
     screen.fill(background_color)
