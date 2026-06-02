@@ -45,6 +45,7 @@ def load_maze(filename):
 
     return maze, pos_guards, pos_player
 
+# Lists are mutable, so calling this function modifies the caller's maze even without returning the maze
 def reveal_maze(maze, pos_player):
     x, y = pos_player
     for dy in range(-2, 3):
@@ -60,10 +61,39 @@ def reveal_maze(maze, pos_player):
                 elif maze[idx_y][idx_x] == "K":
                     maze[idx_y][idx_x] = "k"
 
-    return maze
+def draw_maze(screen, maze):
+    for y, row in enumerate(maze):
+        for x, char in enumerate(row):
+            if char == "*":
+                screen.blit(brick, screen_pos(x, y)) # Pass the top-left coordinates directly instead of using a rect
+            elif char == "d":
+                screen.blit(door, screen_pos(x, y))
+            elif char == "k":
+                screen.blit(gold_key, screen_pos(x, y))
 
 maze, pos_guards, pos_player = load_maze("maze1.txt")
-maze = reveal_maze(maze, pos_player)
+reveal_maze(maze, pos_player)
+
+max_y = len(maze)
+max_x = len(maze[0])
+scale_y = height//max_y
+scale_x = width//max_x
+
+tile_size = min(scale_x, scale_y)
+
+# Converts the world coordinate system (maze coordinates) to screen coordinates
+def screen_pos(x, y):
+    return x * tile_size, y * tile_size
+
+brick     = pg.transform.scale(brick, (tile_size, tile_size))
+brick_lit = pg.transform.scale(brick_lit, (tile_size, tile_size))
+door      = pg.transform.scale(door, (tile_size, tile_size))
+gold_key  = pg.transform.scale(gold_key, (tile_size, tile_size))
+guard     = pg.transform.scale(guard, (tile_size, tile_size))
+player    = pg.transform.scale(player, (tile_size, tile_size))
+
+draw_maze(screen, maze)
+pg.display.flip()
 
 running = True
 
