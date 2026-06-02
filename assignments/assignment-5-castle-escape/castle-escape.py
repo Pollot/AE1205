@@ -1,14 +1,21 @@
 import os
 import pygame as pg
+import configparser
 
 # Get the directory of the game
 game_dir = os.path.dirname(os.path.abspath(__file__))
 
+# Read configuration file using built-in ini parser
+config = configparser.ConfigParser()
+config.read(os.path.join(game_dir, "config.ini"))
+
+width = config.getint("display", "width", fallback=600)
+height = config.getint("display", "height", fallback=400)
+
 # Initialise the PyGame environment
 pg.init()
 
-resolution = (1920, 1080)
-screen = pg.display.set_mode(resolution)
+screen = pg.display.set_mode((width, height))
 
 # Load all assets
 brick     = pg.image.load(os.path.join(game_dir, "brick.png"))
