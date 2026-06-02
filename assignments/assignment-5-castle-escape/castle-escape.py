@@ -9,8 +9,12 @@ game_dir = os.path.dirname(os.path.abspath(__file__))
 config = configparser.ConfigParser()
 config.read(os.path.join(game_dir, "config.ini"))
 
-width = config.getint("display", "width", fallback=600)
+width  = config.getint("display", "width", fallback=600)
 height = config.getint("display", "height", fallback=400)
+r, g, b = config.get("display", "background_color", fallback="10, 10, 25").split(",")
+background_color = (int(r.strip()), int(g.strip()), int(b.strip()))
+
+speed  = config.getfloat("gameplay", "speed", fallback=0.05)
 
 # Initialise the PyGame environment
 pg.init()
@@ -33,14 +37,14 @@ def load_maze(filename):
             maze.append(list(line))
     
     pos_guards = []
-    pos_player = [0, 0]
+    pos_player = (0, 0)
     for y, row in enumerate(maze):
         for x, char in enumerate(row):
             if char == "G":
-                pos_guards.append([x, y])
+                pos_guards.append((x, y))
                 maze[y][x] = " "
             elif char == "P":
-                pos_player = [x, y]
+                pos_player = (x, y)
                 maze[y][x] = " "
 
     return maze, pos_guards, pos_player
@@ -48,10 +52,12 @@ def load_maze(filename):
 # Lists are mutable, so calling this function modifies the caller's maze even without returning the maze
 def reveal_maze(maze, pos_player):
     x, y = pos_player
+    grid_x = round(x)
+    grid_y = round(y)
     for dy in range(-2, 3):
         for dx in range(-2, 3):
-            idx_y = y + dy
-            idx_x = x + dx
+            idx_y = grid_y + dy
+            idx_x = grid_x + dx
 
             if 0 <= idx_y < len(maze) and 0 <= idx_x < len(maze[idx_y]):
                 if maze[idx_y][idx_x] == "#":
@@ -65,14 +71,13 @@ def draw_maze(screen, maze):
     for y, row in enumerate(maze):
         for x, char in enumerate(row):
             if char == "*":
-                screen.blit(brick, screen_pos(x, y)) # Pass the top-left coordinates directly instead of using a rect
+                screen.blit(brick, screen_pos((x, y))) # Pass the top-left coordinates directly instead of using a rect
             elif char == "d":
-                screen.blit(door, screen_pos(x, y))
+                screen.blit(door, screen_pos((x, y)))
             elif char == "k":
-                screen.blit(gold_key, screen_pos(x, y))
+                screen.blit(gold_key, screen_pos((x, y)))
 
 maze, pos_guards, pos_player = load_maze("maze1.txt")
-reveal_maze(maze, pos_player)
 
 max_y = len(maze)
 max_x = len(maze[0])
@@ -82,8 +87,9 @@ scale_x = width//max_x
 tile_size = min(scale_x, scale_y)
 
 # Converts the world coordinate system (maze coordinates) to screen coordinates
-def screen_pos(x, y):
-    return x * tile_size, y * tile_size
+def screen_pos(maze_pos):
+    x, y = maze_pos
+    return round(x * tile_size), round(y * tile_size)
 
 brick     = pg.transform.scale(brick, (tile_size, tile_size))
 brick_lit = pg.transform.scale(brick_lit, (tile_size, tile_size))
@@ -92,8 +98,22 @@ gold_key  = pg.transform.scale(gold_key, (tile_size, tile_size))
 guard     = pg.transform.scale(guard, (tile_size, tile_size))
 player    = pg.transform.scale(player, (tile_size, tile_size))
 
-draw_maze(screen, maze)
-pg.display.flip()
+def move(old_position, direction, speed):
+    if direction == (0, 0):
+        return old_position
+    x, y = old_position
+    
+    direction_x, direction_y = direction
+
+    if direction_x == 0:
+        x = round(x)
+        y += direction_y * speed
+
+    if direction_y == 0:
+        y = round(y)
+        x += direction_x * speed
+
+    return x, y
 
 running = True
 
@@ -102,13 +122,33 @@ while running:
         # Check if the user clicked the window's close button
         if event.type == pg.QUIT:
             running = False
-
         # Check if a key was pressed on the keyboard
         elif event.type == pg.KEYDOWN:
             # Check if the specific key pressed was the Escape key
             if event.key == pg.K_ESCAPE:
                 running = False
 
+    keys = pg.key.get_pressed() # pg.event.get() already pumps the event queue
+
+    if keys[pg.K_UP]:
+        direction = (0, -1)
+    elif keys[pg.K_DOWN]:
+        direction = (0, 1)
+    elif keys[pg.K_LEFT]:
+        direction = (-1, 0)
+    elif keys[pg.K_RIGHT]:
+        direction = (1, 0)
+    else:
+        direction = (0, 0)
+
+    pos_player = move(pos_player, direction, speed)
+
+    # Drawing routine
+    screen.fill(background_color)
+    reveal_maze(maze, pos_player)
+    draw_maze(screen, maze)
+    screen.blit(player, screen_pos(pos_player))
+    pg.display.flip()
 
 # Close the game window and properly clean up
 pg.quit()
