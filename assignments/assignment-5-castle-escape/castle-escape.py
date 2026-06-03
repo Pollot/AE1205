@@ -163,6 +163,28 @@ def draw_guard(screen, guard_pos, player_pos):
     if abs(player_pos[0] - guard_pos[0]) < 3 and abs(player_pos[1] - guard_pos[1]) < 3:
         screen.blit(guard, screen_pos(guard_pos))
 
+def guard_collision(player_pos, guard_pos):
+    player_x, player_y = player_pos
+    guard_x, guard_y = guard_pos
+
+    distance_squared = ((player_x - guard_x)**2 + (player_y - guard_y)**2)
+    if distance_squared < 0.5:
+        return True
+    else:
+        return False
+
+def end_game(screen, text, color):
+        font = pg.font.Font(None, height // 5)  # Creates a font object with default font and size height // 5
+        text = font.render(text, True, color, "black")  # Creates a text surface object (True for anti-aliasing)
+        textrect = text.get_rect()
+        textrect.center = (width // 2, height //2)
+
+        screen.blit(text, textrect)
+        pg.display.flip()
+
+        time.sleep(2)
+        return False
+
 # Used for variable dt with an FPS cap
 # Because the player moves at a constant velocity, a higher dt resulting from slowdowns doesn't affect the movement speed
 # However, dt_max is implemented to avoid potential collision detection issues
@@ -207,16 +229,7 @@ while running:
         maze[grid_y][grid_x] = " "
 
     if maze[grid_y][grid_x].lower() == "d" and has_key:
-        font = pg.font.Font(None, height // 5)  # Creates a font object with default font and size height // 5
-        text = font.render("You escaped!", True, (255, 215, 0), "black")  # Creates a text surface object (True for anti-aliasing)
-        textrect = text.get_rect()
-        textrect.center = (width // 2, height //2)
-
-        screen.blit(text, textrect)
-        pg.display.flip()
-
-        time.sleep(2)
-        running = False
+        running = end_game(screen, "You escaped!", (255, 215, 0))
 
     # Drawing routine
     screen.fill(background_color)
@@ -229,6 +242,8 @@ while running:
         pos_guards[idx] = new_pos
         direction_guards[idx] = new_direction
         draw_guard(screen, new_pos, pos_player)
+        if guard_collision(pos_player, new_pos):
+            running = end_game(screen, "You were caught!", (138, 7, 7))
 
     pg.display.flip()
 
