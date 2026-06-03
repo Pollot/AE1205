@@ -1,6 +1,7 @@
 import os
 import pygame as pg
 import configparser
+import time
 
 # Get the directory of the game
 game_dir = os.path.dirname(os.path.abspath(__file__))
@@ -21,6 +22,9 @@ dt_max = config.getfloat("simulation", "dt_max", fallback=0.1)
 
 # Initialise the PyGame environment
 pg.init()
+
+# Set the PyGame window title
+pg.display.set_caption("Castle Escape - AE1205")
 
 screen = pg.display.set_mode((width, height))
 
@@ -118,7 +122,7 @@ def move(old_position, direction, speed, dt):
 
     return x, y
 
-def check_wall(position, direction, can_open_door):
+def check_wall(maze, position, direction, can_open_door):
     x, y = position
     direction_x, direction_y = direction
 
@@ -133,7 +137,8 @@ def check_wall(position, direction, can_open_door):
         return False
 
 # Used for variable dt with an FPS cap
-# Because the player moves at a constant velocity, a higher dt resulting from slowdowns doesn't affect movement accuracy
+# Because the player moves at a constant velocity, a higher dt resulting from slowdowns doesn't affect the movement speed
+# However, dt_max is implemented to avoid potential collision detection issues
 clock = pg.time.Clock()
 running = True
 dt = 0
@@ -163,7 +168,7 @@ while running:
     else:
         direction = (0, 0)
 
-    if not check_wall(pos_player, direction, has_key):
+    if not check_wall(maze, pos_player, direction, has_key):
         pos_player = move(pos_player, direction, speed, dt)
 
     reveal_maze(maze, pos_player)
@@ -173,6 +178,18 @@ while running:
     if maze[grid_y][grid_x] == "k":
         has_key = True
         maze[grid_y][grid_x] = " "
+
+    if maze[grid_y][grid_x] == "d" and has_key:
+        font = pg.font.Font(None, height // 5)  # Creates a font object with default font and size height // 5
+        text = font.render("You escaped!", True, (255, 215, 0))  # Creates a text surface object (True for anti-aliasing)
+        textrect = text.get_rect()
+        textrect.center = (width // 2, height //2)
+
+        screen.blit(text, textrect)
+        pg.display.flip()
+
+        time.sleep(2)
+        running = False
 
     # Drawing routine
     screen.fill(background_color)
