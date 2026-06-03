@@ -181,7 +181,7 @@ while running:
 
     if maze[grid_y][grid_x] == "d" and has_key:
         font = pg.font.Font(None, height // 5)  # Creates a font object with default font and size height // 5
-        text = font.render("You escaped!", True, (255, 215, 0))  # Creates a text surface object (True for anti-aliasing)
+        text = font.render("You escaped!", True, (255, 215, 0), "black")  # Creates a text surface object (True for anti-aliasing)
         textrect = text.get_rect()
         textrect.center = (width // 2, height //2)
 
