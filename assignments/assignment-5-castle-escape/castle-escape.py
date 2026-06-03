@@ -2,6 +2,7 @@ import os
 import pygame as pg
 import configparser
 import time
+import random
 
 # Get the directory of the game
 game_dir = os.path.dirname(os.path.abspath(__file__))
@@ -85,6 +86,7 @@ def draw_maze(screen, maze):
                 screen.blit(gold_key, screen_pos((x, y)))
 
 maze, pos_guards, pos_player = load_maze("maze1.txt")
+reveal_maze(maze, pos_player)
 
 max_y = len(maze)
 max_x = len(maze[0])
@@ -129,12 +131,33 @@ def check_wall(maze, position, direction, can_open_door):
     boundary_x = round(x + direction_x * 0.5)
     boundary_y = round(y + direction_y * 0.5)
 
-    if maze[boundary_y][boundary_x] == "*":
+    if maze[boundary_y][boundary_x] in "#*":
         return True
-    elif maze[boundary_y][boundary_x] == "d" and not can_open_door:
+    elif maze[boundary_y][boundary_x] in "Dd" and not can_open_door:
         return True
     else:
         return False
+
+def guard_move(maze, position, direction, speed, dt):
+    while check_wall(maze, position, direction, False):
+        direction = random_direction()
+
+    position = move(position, direction, speed, dt)
+
+    return position, direction
+
+def random_direction():
+    direction = random.choice([
+        (1, 0),   # right
+        (-1, 0),  # left
+        (0, 1),   # down
+        (0, -1)   # up
+    ])
+    return direction
+
+direction_guards = []
+for _ in range(len(pos_guards)):
+    direction_guards.append(random_direction())
 
 # Used for variable dt with an FPS cap
 # Because the player moves at a constant velocity, a higher dt resulting from slowdowns doesn't affect the movement speed
@@ -171,15 +194,24 @@ while running:
     if not check_wall(maze, pos_player, direction, has_key):
         pos_player = move(pos_player, direction, speed, dt)
 
+    screen.fill(background_color)
+
+    for idx, pos in enumerate(pos_guards):
+        direction = direction_guards[idx]
+        new_pos, new_direction = guard_move(maze, pos, direction, speed, dt)
+        pos_guards[idx] = new_pos
+        direction_guards[idx] = new_direction
+        screen.blit(guard, screen_pos(new_pos))
+
     reveal_maze(maze, pos_player)
 
     x, y = pos_player
     grid_x, grid_y = round(x), round(y)
-    if maze[grid_y][grid_x] == "k":
+    if maze[grid_y][grid_x].lower() == "k":
         has_key = True
         maze[grid_y][grid_x] = " "
 
-    if maze[grid_y][grid_x] == "d" and has_key:
+    if maze[grid_y][grid_x].lower() == "d" and has_key:
         font = pg.font.Font(None, height // 5)  # Creates a font object with default font and size height // 5
         text = font.render("You escaped!", True, (255, 215, 0), "black")  # Creates a text surface object (True for anti-aliasing)
         textrect = text.get_rect()
@@ -192,7 +224,7 @@ while running:
         running = False
 
     # Drawing routine
-    screen.fill(background_color)
+    # screen.fill(background_color)
     draw_maze(screen, maze)
     screen.blit(player, screen_pos(pos_player))
     pg.display.flip()
