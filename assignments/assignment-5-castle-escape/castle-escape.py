@@ -166,9 +166,16 @@ while running:
     if not check_wall(pos_player, direction, has_key):
         pos_player = move(pos_player, direction, speed, dt)
 
+    reveal_maze(maze, pos_player)
+
+    x, y = pos_player
+    grid_x, grid_y = round(x), round(y)
+    if maze[grid_y][grid_x] == "k":
+        has_key = True
+        maze[grid_y][grid_x] = " "
+
     # Drawing routine
     screen.fill(background_color)
-    reveal_maze(maze, pos_player)
     draw_maze(screen, maze)
     screen.blit(player, screen_pos(pos_player))
     pg.display.flip()
