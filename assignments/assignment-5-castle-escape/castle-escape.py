@@ -16,7 +16,10 @@ height  = config.getint("display", "height", fallback=400)
 r, g, b = config.get("display", "background_color", fallback="0, 0, 0").split(",")
 background_color = (int(r.strip()), int(g.strip()), int(b.strip()))
 
-speed = config.getfloat("gameplay", "speed", fallback=3)  # Cells per second
+speed = config.getfloat("gameplay", "speed", fallback=3.0)  # Cells per second
+render_distance = config.getint("gameplay", "render_distance", fallback=2)
+guard_render_distance = config.getfloat("gameplay", "guard_render_distance", fallback=3.0)
+guard_catch_range = config.getfloat("gameplay", "guard_catch_range", fallback=0.5)
 
 fps = config.getint("simulation", "fps", fallback=60)
 dt_max = config.getfloat("simulation", "dt_max", fallback=0.1)
@@ -62,8 +65,8 @@ def reveal_maze(maze, pos_player):
     x, y = pos_player
     grid_x = round(x)
     grid_y = round(y)
-    for dy in range(-2, 3):
-        for dx in range(-2, 3):
+    for dy in range(-render_distance, render_distance + 1):
+        for dx in range(-render_distance, render_distance + 1):
             idx_y = grid_y + dy
             idx_x = grid_x + dx
 
@@ -160,7 +163,8 @@ for _ in range(len(pos_guards)):
     direction_guards.append(random_direction())
 
 def draw_guard(screen, guard_pos, player_pos):
-    if abs(player_pos[0] - guard_pos[0]) < 3 and abs(player_pos[1] - guard_pos[1]) < 3:
+    if abs(player_pos[0] - guard_pos[0]) < guard_render_distance \
+        and abs(player_pos[1] - guard_pos[1]) < guard_render_distance:
         screen.blit(guard, screen_pos(guard_pos))
 
 def guard_collision(player_pos, guard_pos):
@@ -168,7 +172,7 @@ def guard_collision(player_pos, guard_pos):
     guard_x, guard_y = guard_pos
 
     distance_squared = ((player_x - guard_x)**2 + (player_y - guard_y)**2)
-    if distance_squared < 0.5:
+    if distance_squared < guard_catch_range**2:
         return True
     else:
         return False
