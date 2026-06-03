@@ -159,6 +159,10 @@ direction_guards = []
 for _ in range(len(pos_guards)):
     direction_guards.append(random_direction())
 
+def draw_guard(screen, guard_pos, player_pos):
+    if abs(player_pos[0] - guard_pos[0]) < 3 and abs(player_pos[1] - guard_pos[1]) < 3:
+        screen.blit(guard, screen_pos(guard_pos))
+
 # Used for variable dt with an FPS cap
 # Because the player moves at a constant velocity, a higher dt resulting from slowdowns doesn't affect the movement speed
 # However, dt_max is implemented to avoid potential collision detection issues
@@ -194,15 +198,6 @@ while running:
     if not check_wall(maze, pos_player, direction, has_key):
         pos_player = move(pos_player, direction, speed, dt)
 
-    screen.fill(background_color)
-
-    for idx, pos in enumerate(pos_guards):
-        direction = direction_guards[idx]
-        new_pos, new_direction = guard_move(maze, pos, direction, speed, dt)
-        pos_guards[idx] = new_pos
-        direction_guards[idx] = new_direction
-        screen.blit(guard, screen_pos(new_pos))
-
     reveal_maze(maze, pos_player)
 
     x, y = pos_player
@@ -224,9 +219,17 @@ while running:
         running = False
 
     # Drawing routine
-    # screen.fill(background_color)
+    screen.fill(background_color)
     draw_maze(screen, maze)
     screen.blit(player, screen_pos(pos_player))
+
+    for idx, pos in enumerate(pos_guards):
+        direction = direction_guards[idx]
+        new_pos, new_direction = guard_move(maze, pos, direction, speed, dt)
+        pos_guards[idx] = new_pos
+        direction_guards[idx] = new_direction
+        draw_guard(screen, new_pos, pos_player)
+
     pg.display.flip()
 
     dt = clock.tick(fps) / 1000  # Limits FPS and returns the elapsed time since the last frame in seconds
